@@ -11,11 +11,12 @@ pickup_dict = {}
 dropoff_dict = {}
 align_lst = []
 align_lst1 = []
+switch = True
 
 
 
 
-def click_event(event, x, y, flags, params):
+def click_eventbase(event, x, y, flags, params):
     global pickup_cnt, dropoff_cnt, pickup_dict, dropoff_dict
     # checking for left mouse clicks
     
@@ -25,92 +26,123 @@ def click_event(event, x, y, flags, params):
         pickup_cnt += 1
         # displaying the coordinates
         # on the image window
-        cv2.circle(img, (x,y), 10, (255,255,255), 2)
-        cv2.circle(img, (x,y), 1, (0,0,255), 1)
+        cv2.circle(imgbase, (x,y), 10, (255,255,255), 2)
+        cv2.circle(imgbase, (x,y), 1, (0,0,255), 1)
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(img, "{}".format(pickup_cnt), (x,y), font,
+        cv2.putText(imgbase, "{}".format(pickup_cnt), (x,y), font,
+                    1, (0, 0, 255), 2)
+
+        align_lst1.append((x,y))
+        print("{}, {}".format(x,y))
+
+        cv2.imshow('image', imgbase)
+        cv2.waitKey(0)
+
+
+def click_eventgps(event, x, y, flags, params):
+    global pickup_cnt, dropoff_cnt, pickup_dict, dropoff_dict
+    # checking for left mouse clicks
+    
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+
+        # displaying the coordinates
+        # on the image window
+        cv2.circle(imggps, (x,y), 10, (255,255,255), 2)
+        cv2.circle(imggps, (x,y), 1, (0,0,255), 1)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(imggps, "{}".format(pickup_cnt), (x,y), font,
                     1, (0, 0, 255), 2)
 
         align_lst.append((x,y))
         print("{}, {}".format(x,y))
 
-        cv2.imshow('image', img)
+        cv2.imshow('image', imggps)
         cv2.waitKey(0)
 
-
+ 
+if __name__=="__main__":
+    # reading the image
+        global imgbase
+        imgbase = cv2.imread("C:/Users/raofe/GPS_Pics-1/pictures/IMG_BASE.jpeg", 1)
+ 
 
 # driver function
-if __name__=="__main__":
-
-    # reading the image
-    img = cv2.imread("C:/Users/raofe/GPS_Pics-1/pictures/IMG_BASE.jpeg", 1)
-    #scale_percent = 70
-    #width = int(img.shape[1] * scale_percent / 100)
-    #height = int(img.shape[0] * scale_percent / 100)
-    #img = cv2.resize(img, (width, height), interpolation = cv2.INTER_AREA)
-
-    #cv2.imwrite("C:/Users/McIntosh Aeronautics/Documents/mppython/drone_images/image_2.jpeg", img)
-    #img2 = cv2.imread('/Users/sparky/Documents/DroneOpencv/FayetteFlyers-mavic.png', 1)
-    size = (len(img), len(img[0]))
-    print(size)
+def baseImg():
+    
+    
+        size = (len(imgbase), len(imgbase[0]))
+        print(size)
     
     # displaying the image
-    cv2.imshow('image', img)
+        cv2.imshow('image', imgbase)
 
     # setting mouse handler for the image
     # and calling the click_event() function
     
-    cv2.setMouseCallback('image', click_event)
+        cv2.setMouseCallback('image', click_eventbase)
 
     # wait for a key to be pressed to exit
-    cv2.waitKey(0)
+        cv2.waitKey(0)
 
     # close the window
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
+    
+    
 
-
+if __name__=="__main__":
+        global imggps
+        # reading the image
+        imggps = cv2.imread("C:/Users/raofe/GPS_Pics-1/pictures/GPS_IMG.PNG", 1)
 
 
 # driver function
-if __name__=="__main__":
-
-    # reading the image
-    img = cv2.imread("C:/Users/raofe/GPS_Pics-1/pictures/GPS_IMG.PNG", 1)
+def gpsImg():
     
     #cv2.imwrite("C:/Users/McIntosh Aeronautics/Documents/mppython/drone_images/image_2.jpeg", img)
     #img2 = cv2.imread('/Users/sparky/Documents/DroneOpencv/FayetteFlyers-mavic.png', 1)
-    size = (len(img), len(img[0]))
-    print(size)
+        size = (len(imggps), len(imggps[0]))
+        print(size)
     
     # displaying the image
-    cv2.imshow('image', img)
+        cv2.imshow('image', imggps)
 
     # setting mouse handler for the image
     # and calling the click_event() function
     
-    cv2.setMouseCallback('image', click_event)
+        cv2.setMouseCallback('image', click_eventgps)
 
     # wait for a key to be pressed to exit
-    cv2.waitKey(0)
+        cv2.waitKey(0)
 
     # close the window
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
 
 
 
 print(pickle.load(open('C:/Users/raofe/GPS_Pics-1/pickles/data.pickle', 'rb')))
 
+def closing():
+    print("Closing...")
 
 
 
 solid_gps = align_lst
 
+while switch == True:
+    baseImg()
+    gpsImg()
+    test = input()
+    if test == " ":
+          break
+
+
 
 with open('C:/Users/raofe/GPS_Pics-1/pickles/actual_coords.pickle', 'wb') as file:
-                pickle.dump(align_lst, file)
+                pickle.dump(align_lst1, file)
 
 
-with open('C:/Users/raofe/GPS_Pics-1/pickles/GPS_coords.pickle', 'wb') as file:
+with open('C:/Users/raofe/GPS_Pics-1/pickles/coords_gps.pickle', 'wb') as file:
                 pickle.dump(align_lst, file)
 
 
@@ -175,10 +207,12 @@ def alignImages(im1, im2):
     with open('C:/Users/raofe/GPS_Pics-1/pickles/actual_coords.pickle', 'rb') as file:
         points1 = np.array(pickle.load(file))
         print(len(points1))
-    with open('C:/Users/raofe/GPS_Pics-1/pickles/gps_coords.pickle', 'rb') as file:
+    with open('C:/Users/raofe/GPS_Pics-1/pickles/coords_gps.pickle', 'rb') as file:
         points2 = np.array(pickle.load(file))
         print(len(points2))
     # Find homography
+    print("points1 {}".format(points1))
+    print("points2 {}".format(points2))
     h, mask = cv2.findHomography(points1, points2, cv2.RANSAC)
 
     # Use homography
